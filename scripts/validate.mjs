@@ -1,10 +1,20 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
-const [skill, english, chinese, security, contributing, license] =
+const [
+  skill,
+  english,
+  chinese,
+  security,
+  contributing,
+  license,
+  packageSource,
+  serverSource,
+  executable,
+] =
   await Promise.all([
     read("skills/haoyoubox-publish/SKILL.md"),
     read("README.md"),
@@ -12,7 +22,12 @@ const [skill, english, chinese, security, contributing, license] =
     read("SECURITY.md"),
     read("CONTRIBUTING.md"),
     read("LICENSE"),
+    read("package.json"),
+    read("server.json"),
+    read("bin/haoyoubox-mcp.js"),
   ]);
+const packageJson = JSON.parse(packageSource);
+const serverJson = JSON.parse(serverSource);
 
 assert.match(skill, /^---\n[\s\S]+?\n---\n/);
 assert.match(skill, /\nname: haoyoubox-publish\n/);
@@ -57,11 +72,46 @@ for (const readme of [english, chinese]) {
   assert.ok(readme.includes("https://www.haoyoubox.com/agent/SKILL.md"));
   assert.ok(readme.includes("report.html"));
   assert.ok(readme.includes("haoyoubox-publish"));
+  assert.ok(readme.includes("npx -y haoyoubox-mcp auth"));
+  assert.ok(readme.includes('"command": "npx"'));
+  assert.ok(readme.includes('"-y", "haoyoubox-mcp"'));
+  assert.ok(readme.includes("publish_file"));
+  assert.ok(readme.includes("com.haoyoubox/publish"));
 }
 assert.ok(english.includes("README.zh-CN.md"));
 assert.ok(chinese.includes("README.md"));
 assert.match(security, /private vulnerability report/i);
 assert.match(contributing, /npm test/);
+assert.match(contributing, /npm run pack:check/);
+assert.match(contributing, /mcp-publisher validate server\.json/);
 assert.match(license, /Apache License/);
 
-console.log("HaoyouBox Agent Skill validation passed.");
+assert.equal(packageJson.name, "haoyoubox-mcp");
+assert.equal(packageJson.version, "1.0.0");
+assert.equal(packageJson.mcpName, "com.haoyoubox/publish");
+assert.equal(packageJson.bin["haoyoubox-mcp"], "bin/haoyoubox-mcp.js");
+assert.equal(serverJson.name, packageJson.mcpName);
+assert.equal(serverJson.version, packageJson.version);
+assert.equal(serverJson.packages[0].identifier, packageJson.name);
+assert.equal(serverJson.packages[0].version, packageJson.version);
+assert.equal(serverJson.packages[0].transport.type, "stdio");
+assert.equal(serverJson.websiteUrl, "https://www.haoyoubox.com/agent");
+assert.ok(serverJson.description.length <= 100);
+assert.match(executable, /^#!\/usr\/bin\/env node\n/);
+if (process.platform !== "win32")
+  assert.ok((await stat(new URL("bin/haoyoubox-mcp.js", root))).mode & 0o111);
+
+const publicSources = [
+  skill,
+  english,
+  chinese,
+  security,
+  contributing,
+  packageSource,
+  serverSource,
+  executable,
+].join("\n");
+assert.doesNotMatch(publicSources, /-----BEGIN (?:EC |RSA |OPENSSH )?PRIVATE KEY-----/);
+assert.doesNotMatch(publicSources, /hb_pub_[a-f0-9]{24}_[A-Za-z0-9_-]{20,}/);
+
+console.log("HaoyouBox Agent Skill and MCP validation passed.");

@@ -18,4 +18,14 @@ If a HaoyouBox publish token may be exposed, revoke it immediately from [Agent a
 
 如果好友盒发布令牌可能泄漏，请立即在 [Agent 接入](https://www.haoyoubox.com/app?view=agent&lang=zh) 中撤销。确认泄漏来源已经清除后，再创建新令牌。
 
-The repository contains no production credentials. Pull requests that add tokens, cookies, private files, or credential-shaped fixtures will not be accepted.
+The repository contains no production credentials. Pull requests that add tokens, cookies, private files, registry signing keys, or credential-shaped fixtures will not be accepted.
+
+## MCP credential handling / MCP 凭据处理
+
+The MCP `auth` command stores a publish-only token outside the repository. On POSIX systems, the credential directory uses mode `0700` and the file uses mode `0600`. `HAOYOUBOX_TOKEN` is supported for MCP hosts that provide a secret environment store. Never put the token in MCP arguments, source files, logs, or `server.json`.
+
+MCP `auth` 命令把仅有发布权限的令牌保存在仓库外。POSIX 系统上的凭据目录使用 `0700`，文件使用 `0600`。支持由 MCP Host 通过机密环境存储提供 `HAOYOUBOX_TOKEN`。不要把令牌写入 MCP 参数、源代码、日志或 `server.json`。
+
+The stdio server reserves stdout for MCP JSON-RPC. Diagnostics go to stderr. Test and issue-report fixtures must use synthetic files, tokens, share URLs, and account data.
+
+stdio 服务器只把 stdout 用于 MCP JSON-RPC。诊断信息写入 stderr。测试和问题报告必须使用虚构文件、令牌、分享链接和账号数据。

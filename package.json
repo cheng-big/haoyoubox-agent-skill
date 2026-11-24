@@ -1,12 +1,55 @@
 {
-  "name": "haoyoubox-agent-skill",
+  "name": "haoyoubox-mcp",
   "version": "1.0.0",
-  "private": true,
+  "description": "Publish local HTML or Markdown files as expiring password-protected HaoyouBox links.",
+  "license": "Apache-2.0",
+  "homepage": "https://www.haoyoubox.com/agent",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cheng-big/haoyoubox-agent-skill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cheng-big/haoyoubox-agent-skill/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "haoyoubox",
+    "html",
+    "markdown"
+  ],
+  "private": false,
   "type": "module",
+  "mcpName": "com.haoyoubox/publish",
+  "bin": {
+    "haoyoubox-mcp": "bin/haoyoubox-mcp.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "skills/",
+    "README.md",
+    "README.zh-CN.md",
+    "SECURITY.md",
+    "LICENSE",
+    "server.json"
+  ],
   "scripts": {
-    "test": "node scripts/validate.mjs"
+    "test": "node --test --test-concurrency=1 test/*.test.js && node scripts/validate.mjs",
+    "test:protocol": "node --test --test-concurrency=1 test/mcp.test.js",
+    "pack:check": "npm pack --dry-run --json"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.3.1",
+    "acorn": "8.15.0",
+    "markdown-it": "15.0.3",
+    "parse5": "7.3.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1"
   }
 }
